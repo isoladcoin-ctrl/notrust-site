@@ -1,0 +1,7 @@
+{
+  "tokenAddress": "https://bscscan.com/token/PUT_TOKEN_ADDRESS",
+  "verifiedLink": "https://bscscan.com/address/PUT_CONTRACT_ADDRESS#code",
+  "lpTx": "https://bscscan.com/tx/PUT_LP_BURN_OR_LOCK_TX",
+  "deployer": "https://bscscan.com/address/PUT_DEPLOYER_ADDRESS",
+  "multisig": "https://bscscan.com/address/PUT_MULTISIG_ADDRESS"
+}
