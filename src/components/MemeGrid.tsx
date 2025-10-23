@@ -1,7 +1,8 @@
 export default function MemeGrid() {
   const memes = [
-    "/memes/meme1.jpg","/memes/meme2.jpg","/memes/meme3.jpg","/memes/meme4.jpg",
-    "/memes/meme5.jpg","/memes/meme6.jpg","/memes/meme7.jpg","/memes/meme8.jpg","/memes/meme9.jpg",
+    "/memes/meme1.png","/memes/meme2.png","/memes/meme3.png","/memes/meme4.png",
+    "/memes/meme5.png","/memes/meme6.png","/memes/meme7.png","/memes/meme8.png","/memes/meme9.png",
+    "/memes/meme10.png",
   ];
 
   return (
