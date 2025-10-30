@@ -26,6 +26,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "src/app/scam-hub/admin/page.tsx.old", "src/app/scam-hub/admin/AdminActions.tsx.old"  ],
   "exclude": ["node_modules"]
 }
