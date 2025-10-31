@@ -58,7 +58,6 @@ export default async function AdminPage({
               postId={p.id}
               adminKey={key}
               wallet={p.wallet}
-              alreadyRewarded={!!p.rewarded_at || p.status === 'rewarded'}
             />
           </div>
         </div>
