@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/adminAuth";
-import { getItem, setItem } from "@/lib/kv";
+import { deleteItem, getItem } from "@/lib/kv";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -10,10 +10,9 @@ export async function POST(req: NextRequest) {
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  const item = await getItem(id);
-  if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const existing = await getItem(id);
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  item.status = "approved";
-  await setItem(item);
-  return NextResponse.json({ ok: true, item });
+  await deleteItem(id);
+  return NextResponse.json({ ok: true });
 }

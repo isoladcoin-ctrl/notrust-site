@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const item = await getItem(id);
   if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  item.status = "approved";
+  item.status = "rejected";
   await setItem(item);
   return NextResponse.json({ ok: true, item });
 }
