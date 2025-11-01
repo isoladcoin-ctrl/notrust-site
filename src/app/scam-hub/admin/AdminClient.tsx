@@ -1,18 +1,28 @@
-"use client";
+// src/lib/adminAuth.ts
+// @ts-nocheck
 
-import React from "react";
+// Read "Authorization: Bearer <token>" from any request-like object
+function readBearer(req: any): string {
+  const h = req?.headers;
+  const v = (h?.get?.("authorization") ?? h?.get?.("Authorization") ?? "") as string;
+  return v?.startsWith("Bearer ") ? v.slice(7).trim() : "";
+}
 
-export default function AdminClient() {
-  // put your real admin UI here (tables, forms, buttons, etc.)
-  return (
-    <main className="container mx-auto px-6 py-10 space-y-6">
-      <h1 className="text-3xl font-bold">Scam Hub Admin</h1>
-      <p className="text-zinc-400">Protected admin loaded. Build your tools here.</p>
+// Scam Hub admin (uses ADMIN_KEY)
+export function isScamHubAdmin(req: any): boolean {
+  const token = readBearer(req);
+  const expected = (process.env.ADMIN_KEY ?? "").trim();
+  return Boolean(expected) && token === expected;
+}
 
-      {/* Example placeholder actions */}
-      <div className="mt-6 rounded-xl border border-zinc-800 p-4">
-        <p className="text-sm text-zinc-300">This is where your admin controls go.</p>
-      </div>
-    </main>
-  );
+// Roadmap/Tokenomics admin (uses ADMIN_TOKEN)
+export function isSiteAdmin(req: any): boolean {
+  const token = readBearer(req);
+  const expected = (process.env.ADMIN_TOKEN ?? "").trim();
+  return Boolean(expected) && token === expected;
+}
+
+// Debug helper
+export function readAdminBearer(req: any): string {
+  return readBearer(req);
 }
