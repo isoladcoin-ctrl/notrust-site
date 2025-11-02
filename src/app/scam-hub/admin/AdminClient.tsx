@@ -1,28 +1,44 @@
-// src/lib/adminAuth.ts
-// @ts-nocheck
+// src/app/scam-hub/admin/AdminClient.tsx
+"use client";
+import { useEffect, useMemo, useState } from "react";
 
-// Read "Authorization: Bearer <token>" from any request-like object
-function readBearer(req: any): string {
-  const h = req?.headers;
-  const v = (h?.get?.("authorization") ?? h?.get?.("Authorization") ?? "") as string;
-  return v?.startsWith("Bearer ") ? v.slice(7).trim() : "";
-}
+export default function AdminClient() {
+  const [items, setItems] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-// Scam Hub admin (uses ADMIN_KEY)
-export function isScamHubAdmin(req: any): boolean {
-  const token = readBearer(req);
-  const expected = (process.env.ADMIN_KEY ?? "").trim();
-  return Boolean(expected) && token === expected;
-}
+  // read ?key=... from the URL
+  const key = useMemo(() => new URLSearchParams(window.location.search).get("key") || "", []);
 
-// Roadmap/Tokenomics admin (uses ADMIN_TOKEN)
-export function isSiteAdmin(req: any): boolean {
-  const token = readBearer(req);
-  const expected = (process.env.ADMIN_TOKEN ?? "").trim();
-  return Boolean(expected) && token === expected;
-}
+  async function load() {
+    setError(null);
+    try {
+      const res = await fetch("/api/scam-hub/list", {
+        headers: { Authorization: `Bearer ${key}` },
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        setError(`HTTP ${res.status}: ${await res.text()}`);
+        return;
+      }
+      const data = await res.json();
+      setItems(data.items ?? []);
+    } catch (e: any) {
+      setError(e?.message || "fetch failed");
+    }
+  }
 
-// Debug helper
-export function readAdminBearer(req: any): string {
-  return readBearer(req);
+  useEffect(() => { load(); }, []);
+
+  return (
+    <div className="space-y-3">
+      {key ? <span className="px-2 py-1 rounded bg-green-900/30">key OK</span>
+           : <span className="px-2 py-1 rounded bg-red-900/30">no key</span>}
+      {error && <div className="rounded bg-red-900/30 p-3">{error}</div>}
+      <div className="rounded border border-zinc-800 p-3">
+        <b>Submissions</b>
+        <pre className="text-xs mt-2">{JSON.stringify(items, null, 2)}</pre>
+      </div>
+      <button onClick={load} className="px-3 py-2 rounded bg-zinc-800">Reload</button>
+    </div>
+  );
 }

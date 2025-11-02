@@ -1,134 +1,106 @@
 // src/app/scam-hub/admin/page.tsx
-// Server Component (no 'use client')
-// Minimal, stable rendering with no hydration mismatches.
-
 export const dynamic = 'force-dynamic';
 
-type AdminSearch = { key?: string };
+function computeBaseURL(): string {
+  // 1) read env and trim
+  let raw = (process.env.NEXT_PUBLIC_SITE_URL || '').trim();
 
-type Post = {
-  id: string;
-  created_at?: string | null;
-  title?: string | null;
-  summary?: string | null;
-  status?: string | null;          // e.g. 'pending' | 'approved' | 'rewarded'
-  wallet?: string | null;
-  rewarded_at?: string | null;
-};
+  // 2) if someone pasted comments or extra words, keep only the first token
+  if (raw.includes(' ')) raw = raw.split(/\s+/)[0];
 
-async function fetchAdminList(baseUrl: string, key: string) {
-  const url = `${baseUrl}/api/scam-hub/admin/list?key=${encodeURIComponent(key)}`;
-  const res = await fetch(url, { cache: 'no-store' });
-  let data: any = null;
+  // 3) remove trailing slash
+  if (raw.endsWith('/')) raw = raw.slice(0, -1);
 
+  // 4) fallback to Vercel URL or localhost
+  if (!raw) {
+    raw = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+  }
+
+  // 5) validate; if invalid, hard fallback to localhost
   try {
-    data = await res.json();
+    // throws if invalid
+    new URL(raw);
+    return raw;
   } catch {
-    // ignore JSON parse issues; we'll surface a generic error
+    return process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
   }
-
-  if (!res.ok) {
-    const msg = (data && (data.error || data.message)) || res.statusText || 'Request failed';
-    throw new Error(msg);
-  }
-
-  return Array.isArray(data?.items) ? (data.items as Post[]) : [];
 }
 
-export default async function AdminPage({
-  searchParams,
-}: {
-  searchParams?: AdminSearch;
-}) {
-  const key = (searchParams?.key ?? '').toString();
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ||
-    'http://localhost:3000';
+export default async function AdminPage(props: any) {
+  // Next 15: searchParams is async
+  const sp = (await props.searchParams) || {};
+  const key = typeof sp.key === 'string' ? sp.key : '';
 
-  let posts: Post[] = [];
-  let loadError: string | null = null;
+  const base = computeBaseURL();
 
-  if (key) {
-    try {
-      posts = await fetchAdminList(base, key);
-    } catch (e: any) {
-      loadError = e?.message || 'Request failed';
+  let items: any[] = [];
+  let errorMsg: string | null = null;
+
+  try {
+    const url = `${base}/api/scam-hub/admin/list?key=${encodeURIComponent(key)}`;
+    const res = await fetch(url, { cache: 'no-store', next: { revalidate: 0 } });
+    if (!res.ok) {
+      errorMsg = `fetch failed (${res.status})`;
+    } else {
+      const json = await res.json();
+      if (json?.ok) items = json.items ?? [];
+      else errorMsg = json?.error ?? 'server error';
     }
+  } catch {
+    errorMsg = `Failed to fetch from ${base}`;
   }
 
-  return (
-    <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-2">Scam Hub Admin (NEW)</h1>
+  const Badge = ({ children, tone = 'muted' }: { children: any; tone?: 'muted'|'ok'|'warn' }) => {
+    const cls =
+      tone === 'ok'
+        ? 'bg-emerald-100 text-emerald-700'
+        : tone === 'warn'
+        ? 'bg-yellow-100 text-yellow-700'
+        : 'bg-gray-200 text-gray-700';
+    return <span className={`text-xs px-2 py-1 rounded ${cls}`}>{children}</span>;
+  };
 
-      <p className="text-sm text-gray-400 mb-4">
+  const fmt = (v: any) => (v ?? '—');
+
+  return (
+    <main className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold">Scam Hub Admin (NEW)</h1>
+      <p className="text-sm text-gray-500 mb-4">
         Manage submissions. Your key is required for all actions.
-        {key ? (
-          <span className="ml-2 inline-block rounded bg-emerald-900/30 text-emerald-300 px-2 py-0.5 align-middle">
-            key OK
-          </span>
-        ) : (
-          <span className="ml-2 inline-block rounded bg-red-900/30 text-red-300 px-2 py-0.5 align-middle">
-            no key
-          </span>
-        )}
+        <span className="ml-2">
+          <Badge tone={key ? 'ok' : 'warn'}>{key ? 'key OK' : 'no key'}</Badge>
+        </span>
       </p>
 
-      {!key ? (
-        <div className="rounded border border-red-500/40 bg-red-900/20 text-red-200 px-3 py-2 mb-6">
-          Add <code>?key=YOUR_ADMIN_KEY</code> to the URL to view items.
+      {errorMsg && (
+        <div className="mb-4 rounded border border-red-300 bg-red-50 text-red-700 px-3 py-2">
+          {errorMsg}
         </div>
-      ) : loadError ? (
-        <div className="rounded border border-red-500/40 bg-red-900/20 text-red-200 px-3 py-2 mb-6">
-          {loadError}
-        </div>
-      ) : null}
+      )}
 
-      <section className="rounded-xl border border-white/10">
-        <div className="px-4 py-3 border-b border-white/10">
-          <h2 className="font-medium">Submissions</h2>
-          <p className="text-xs text-gray-400">
-            {posts.length === 0 ? 'No items.' : `${posts.length} item(s)`}
-          </p>
+      <section className="rounded border border-gray-200 p-4">
+        <div className="font-semibold mb-3">
+          Submissions <span className="text-gray-500 text-sm">{items.length} item(s)</span>
         </div>
 
-        <div className="divide-y divide-white/10">
-          {posts.map((p) => (
-            <div key={p.id} className="p-4">
-              <div className="text-xs text-gray-400 mb-1">
-                {p.created_at || '—'}
+        {items.length === 0 ? (
+          <p className="text-sm text-gray-500">No items.</p>
+        ) : (
+          <div className="space-y-4">
+            {items.map((p: any) => (
+              <div key={p.id} className="rounded border border-gray-200 p-4">
+                <div className="text-xs text-gray-400 mb-1">{p.created_at}</div>
+                <div className="font-semibold">{fmt(p.title)}</div>
+                <div className="text-sm text-gray-600">{fmt(p.summary)}</div>
+                <div className="flex gap-2 mt-2">
+                  <Badge>status: {fmt(p.status)}</Badge>
+                  <Badge>wallet: {fmt(p.wallet)}</Badge>
+                  <Badge>rewarded_at: {fmt(p.rewarded_at)}</Badge>
+                </div>
               </div>
-              <div className="font-semibold">{p.title || 'Untitled'}</div>
-              {p.summary ? (
-                <div className="text-sm text-gray-300 mt-1">{p.summary}</div>
-              ) : null}
-
-              <div className="flex flex-wrap gap-2 mt-3 text-xs">
-                <span className="inline-flex items-center gap-1 rounded bg-white/5 px-2 py-1">
-                  <span className="opacity-60">status:</span>
-                  <span className="font-medium">{p.status || '—'}</span>
-                </span>
-
-                <span className="inline-flex items-center gap-1 rounded bg-white/5 px-2 py-1">
-                  <span className="opacity-60">wallet:</span>
-                  <span className="font-mono">
-                    {p.wallet && p.wallet.length > 10
-                      ? `${p.wallet.slice(0, 6)}…${p.wallet.slice(-4)}`
-                      : p.wallet || '—'}
-                  </span>
-                </span>
-
-                <span className="inline-flex items-center gap-1 rounded bg-white/5 px-2 py-1">
-                  <span className="opacity-60">rewarded_at:</span>
-                  <span className="font-mono">{p.rewarded_at || '—'}</span>
-                </span>
-              </div>
-            </div>
-          ))}
-
-          {posts.length === 0 && key && !loadError ? (
-            <div className="p-4 text-sm text-gray-400">No submissions yet.</div>
-          ) : null}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );

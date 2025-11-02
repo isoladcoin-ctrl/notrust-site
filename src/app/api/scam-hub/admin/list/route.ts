@@ -1,22 +1,41 @@
-// src/app/api/scam-hub/admin/list/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+// src/app/api/scam-hub/list/route.ts
+import { NextResponse } from "next/server";
+import { kv } from "@vercel/kv";
 
-export async function GET(req: NextRequest) {
-  const key = req.nextUrl.searchParams.get('key') || '';
-  if (key !== process.env.ADMIN_KEY) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
+type Submission = {
+  id: string;
+  title: string;
+  address?: string;
+  url?: string;
+  createdAt: number;
+  status?: "pending" | "approved" | "rejected" | "featured";
+};
 
-  const { data, error } = await supabaseAdmin
-    .from('posts')
-    .select('id, title, summary, status, wallet, rewarded_at, created_at')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('list error:', error);
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ ok: true, items: data });
+function bearerFrom(req: Request) {
+  const h = req.headers.get("authorization") || "";
+  return h.startsWith("Bearer ") ? h.slice(7) : "";
 }
+
+export async function GET(req: Request) {
+  const token = bearerFrom(req);
+  const adminKey = process.env.ADMIN_KEY;
+
+  if (!adminKey || token !== adminKey) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const raw = await kv.lrange<string>("scamhub:submissions", 0, -1);
+    const items = (raw ?? [])
+      .map(s => { try { return JSON.parse(s) as Submission; } catch { return null; } })
+      .filter(Boolean)
+      .sort((a, b) => (b!.createdAt ?? 0) - (a!.createdAt ?? 0));
+
+    return NextResponse.json({ ok: true, items }, { status: 200 });
+  } catch (err) {
+    console.error("KV list error:", err);
+    return NextResponse.json({ ok: true, items: [] }, { status: 200 });
+  }
+}
+
+export const runtime = "nodejs";
