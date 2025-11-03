@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* src/app/globals.css */
+html { scroll-behavior: smooth; }
 
 /* optional defaults */
 :root { color-scheme: dark; }

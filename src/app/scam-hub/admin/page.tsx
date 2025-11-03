@@ -1,107 +1,135 @@
 // src/app/scam-hub/admin/page.tsx
+import { headers } from 'next/headers';
+import AdminActions from './AdminActions';
+
 export const dynamic = 'force-dynamic';
 
-function computeBaseURL(): string {
-  // 1) read env and trim
-  let raw = (process.env.NEXT_PUBLIC_SITE_URL || '').trim();
+type Post = {
+  id: string;
+  title: string | null;
+  summary: string | null;
+  status: string | null;
+  wallet: string | null;
+  rewarded_at: string | null;
+  created_at: string;
+};
 
-  // 2) if someone pasted comments or extra words, keep only the first token
-  if (raw.includes(' ')) raw = raw.split(/\s+/)[0];
+// Build a base URL that works locally and on Vercel/custom domain
+function getBaseUrl(h: Headers) {
+  // Prefer explicit env if set
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (envUrl) return envUrl.replace(/\/$/, '');
 
-  // 3) remove trailing slash
-  if (raw.endsWith('/')) raw = raw.slice(0, -1);
-
-  // 4) fallback to Vercel URL or localhost
-  if (!raw) {
-    raw = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
-  }
-
-  // 5) validate; if invalid, hard fallback to localhost
-  try {
-    // throws if invalid
-    new URL(raw);
-    return raw;
-  } catch {
-    return process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
-  }
+  const forwardedProto = h.get('x-forwarded-proto') || 'http';
+  const forwardedHost = h.get('x-forwarded-host');
+  const host = forwardedHost || h.get('host') || 'localhost:3000';
+  return `${forwardedProto}://${host}`;
 }
 
-export default async function AdminPage(props: any) {
-  // Next 15: searchParams is async
+export default async function AdminPage(props: {
+  // Next.js 15 “sync dynamic APIs” change: searchParams is async
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const sp = (await props.searchParams) || {};
   const key = typeof sp.key === 'string' ? sp.key : '';
 
-  const base = computeBaseURL();
+  const h = await headers();
+  const base = getBaseUrl(h);
 
-  let items: any[] = [];
+  let items: Post[] = [];
   let errorMsg: string | null = null;
 
   try {
     const url = `${base}/api/scam-hub/admin/list?key=${encodeURIComponent(key)}`;
-    const res = await fetch(url, { cache: 'no-store', next: { revalidate: 0 } });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
-      errorMsg = `fetch failed (${res.status})`;
-    } else {
-      const json = await res.json();
-      if (json?.ok) items = json.items ?? [];
-      else errorMsg = json?.error ?? 'server error';
+      const txt = await res.text();
+      throw new Error(txt || `List request failed (${res.status})`);
     }
-  } catch {
-    errorMsg = `Failed to fetch from ${base}`;
+    const data = (await res.json()) as { ok: boolean; items?: Post[]; error?: string };
+    if (!data.ok) throw new Error(data.error || 'List request failed');
+    items = data.items || [];
+  } catch (e: any) {
+    errorMsg = e?.message || 'fetch failed';
   }
 
-  const Badge = ({ children, tone = 'muted' }: { children: any; tone?: 'muted'|'ok'|'warn' }) => {
-    const cls =
-      tone === 'ok'
-        ? 'bg-emerald-100 text-emerald-700'
-        : tone === 'warn'
-        ? 'bg-yellow-100 text-yellow-700'
-        : 'bg-gray-200 text-gray-700';
-    return <span className={`text-xs px-2 py-1 rounded ${cls}`}>{children}</span>;
-  };
-
-  const fmt = (v: any) => (v ?? '—');
-
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold">Scam Hub Admin (NEW)</h1>
-      <p className="text-sm text-gray-500 mb-4">
-        Manage submissions. Your key is required for all actions.
-        <span className="ml-2">
-          <Badge tone={key ? 'ok' : 'warn'}>{key ? 'key OK' : 'no key'}</Badge>
-        </span>
-      </p>
+    <main className="min-h-screen bg-black text-white px-6 py-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold">Scam Hub Admin (NEW)</h1>
+        <p className="mt-1 text-sm text-gray-400">
+          Manage submissions. Your key is required for all actions.{' '}
+          <span className="ml-2 inline-block rounded bg-emerald-700/30 text-emerald-300 px-2 py-0.5 text-xs">
+            key OK
+          </span>
+        </p>
 
-      {errorMsg && (
-        <div className="mb-4 rounded border border-red-300 bg-red-50 text-red-700 px-3 py-2">
-          {errorMsg}
+        {/* Controls */}
+        <div className="mt-4 flex items-center gap-3">
+          <a
+            href={`/scam-hub/admin?key=${encodeURIComponent(key)}`}
+            className="px-3 py-2 rounded border border-white/20 hover:bg-white/5"
+          >
+            Reload
+          </a>
+          <a
+            href={`/api/scam-hub/admin/seed?key=${encodeURIComponent(key)}`}
+            className="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Seed 5 demo items
+          </a>
         </div>
-      )}
 
-      <section className="rounded border border-gray-200 p-4">
-        <div className="font-semibold mb-3">
-          Submissions <span className="text-gray-500 text-sm">{items.length} item(s)</span>
-        </div>
-
-        {items.length === 0 ? (
-          <p className="text-sm text-gray-500">No items.</p>
-        ) : (
-          <div className="space-y-4">
-            {items.map((p: any) => (
-              <div key={p.id} className="rounded border border-gray-200 p-4">
-                <div className="text-xs text-gray-400 mb-1">{p.created_at}</div>
-                <div className="font-semibold">{fmt(p.title)}</div>
-                <div className="text-sm text-gray-600">{fmt(p.summary)}</div>
-                <div className="flex gap-2 mt-2">
-                  <Badge>status: {fmt(p.status)}</Badge>
-                  <Badge>wallet: {fmt(p.wallet)}</Badge>
-                  <Badge>rewarded_at: {fmt(p.rewarded_at)}</Badge>
-                </div>
-              </div>
-            ))}
+        {/* Error */}
+        {errorMsg && (
+          <div className="mt-4 rounded border border-red-500/40 bg-red-900/30 text-red-200 px-3 py-2">
+            {errorMsg}
           </div>
         )}
-      </section>
+
+        {/* List */}
+        <section className="mt-6">
+          <div className="text-sm text-gray-400 mb-2">
+            Submissions <span className="text-gray-300">{items.length} item(s)</span>
+          </div>
+
+          {items.length === 0 ? (
+            <div className="rounded border border-white/10 p-6 text-gray-400">
+              No items. Seed or submit from the public form.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {items.map((p) => (
+                <article
+                  key={p.id}
+                  className="rounded border border-white/15 p-4"
+                >
+                  <div className="text-xs text-gray-400">{p.created_at}</div>
+                  <h3 className="mt-1 font-semibold">{p.title ?? 'Untitled'}</h3>
+                  {p.summary && (
+                    <p className="mt-1 text-gray-200 whitespace-pre-wrap">{p.summary}</p>
+                  )}
+
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 rounded bg-white/10">
+                      status: {p.status ?? 'pending'}
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded bg-white/10">
+                      wallet: {p.wallet ?? '–'}
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded bg-white/10">
+                      rewarded_at: {p.rewarded_at ?? '–'}
+                    </span>
+                  </div>
+
+                  {/* Actions (Approve button) */}
+                  <AdminActions postId={p.id} adminKey={key} status={p.status} />
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </main>
   );
 }
