@@ -1,7 +1,8 @@
+// src/app/page.tsx
+import Link from 'next/link';
 import Image from 'next/image';
 import Receipts from '@/components/Receipts';
 import Scanner from '@/components/Scanner';
-import Footer from '@/components/Footer';
 import Marquee from '@/components/Marquee';
 import MemeGrid from '@/components/MemeGrid';
 
@@ -9,33 +10,36 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-white/10 sticky top-0 bg-black/70 backdrop-blur z-20">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-black/70 px-6 py-4 backdrop-blur">
         <div className="flex items-center gap-3">
-          <Image
-            src="/branding/logo.png"   // <-- update if your file is different
-            alt="$NOTRUST logo"
-            width={80}
-            height={80}
-            priority
-          />
+          <Link href="/" aria-label="$NOTRUST home">
+            <Image
+              src="/branding/logo.png"
+              alt="$NOTRUST logo"
+              width={120}
+              height={120}
+              priority
+            />
+          </Link>
         </div>
-        <nav className="flex items-center gap-2">
-          <a className="px-4 py-2 border border-white/20 rounded-lg" href="#receipts">Read Receipts</a>
-          <a className="px-4 py-2 border border-white/20 rounded-lg" href="#scanner">Scan a Token</a>
-          <a
-            className="px-4 py-2 rounded-lg bg-[#00FF88] text-black font-semibold"
-            href="https://pancakeswap.finance/swap?outputCurrency=YOUR_TOKEN_ADDRESS"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Buy $NOTRUST
-          </a>
+
+        {/* ✅ Simple nav (no hero CTAs) */}
+        <nav className="flex items-center gap-6 text-sm">
+          <Link href="/scam-hub" className="opacity-90 hover:opacity-100">
+            Scam Hub
+          </Link>
+          <Link href="/tokenomics" className="opacity-90 hover:opacity-100">
+            Tokenomics
+          </Link>
+          <Link href="/roadmap" className="opacity-90 hover:opacity-100">
+            Roadmap
+          </Link>
         </nav>
       </header>
 
       {/* Hero */}
-      <section className="py-20 px-6 text-center">
-        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">
+      <section className="px-6 py-20 text-center">
+        <h1 className="text-5xl font-bold tracking-tight md:text-6xl">
           TRUST NOBODY. VERIFY EVERYTHING.
         </h1>
         <p className="mt-3 text-lg opacity-80">
@@ -46,20 +50,24 @@ export default function Home() {
       {/* Warning tape marquee */}
       <Marquee />
 
-      {/* Receipts */}
+      {/* Receipts section (linked by footer if needed) */}
       <section id="receipts" className="p-6 md:p-12">
-        <h2 className="text-3xl font-bold mb-4">Receipts</h2>
+        <h2 className="mb-4 text-3xl font-bold">Receipts</h2>
         <Receipts />
       </section>
 
-      {/* Scanner (client component) */}
-      <Scanner />
+      {/* Provide #scan alias so older links still work */}
+      <span id="scan" aria-hidden="true" style={{ position: 'relative', top: '-80px', display: 'block' }} />
+
+      {/* Scanner section */}
+      <section id="scanner" className="p-6 md:p-12">
+        <h2 className="mb-4 text-3xl font-bold">Scan a Token</h2>
+        <Scanner />
+      </section>
 
       {/* Meme wall */}
       <MemeGrid />
-
-      {/* Footer */}
-      <Footer />
+      {/* ⛔️ Footer is no longer rendered here (it’s in layout.tsx) */}
     </main>
   );
 }
