@@ -45,8 +45,23 @@ export default function SiteHeader() {
           <NavItem href="/scam-hub">Scam Hub</NavItem>
           <NavItem href="/tokenomics">Tokenomics</NavItem>
           <NavItem href="/roadmap">Roadmap</NavItem>
-        </nav>
-
+            <Link
+          href="/scam-hub/submit"
+         className="ml-2 rounded-lg bg-white px-3 py-2 font-medium text-black hover:bg-white/90"
+         aria-label="Submit a Post to Scam Hub"
+          >
+          Submit a Post
+         </Link>
+         </nav>
+         <div className="md:hidden">
+        <Link
+         href="/scam-hub/submit"
+        className="rounded-lg border border-white/20 px-3 py-2 text-sm"
+         >
+        Submit
+        </Link>
+        </div>
+    
         {/* Quick actions */}
         <div className="hidden items-center gap-2 md:flex">
           {/* These jump to sections on the home page */}

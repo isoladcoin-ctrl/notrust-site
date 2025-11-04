@@ -1,24 +1,24 @@
-import { NextResponse } from 'next/server';
+// middleware.ts
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export function middleware(req: NextRequest) {
-  const { pathname, searchParams } = new URL(req.url);
-  // Only guard the admin page
-  if (pathname.startsWith('/scam-hub/admin')) {
-    const key = searchParams.get('key') || '';
-    const ADMIN_KEY = process.env.ADMIN_KEY || '';
-    if (!ADMIN_KEY) {
-      // Don’t 404 silently — show a clear error so we can spot misconfig
-      return new NextResponse('ADMIN_KEY not set on server', { status: 500 });
-    }
-    if (key !== ADMIN_KEY) {
-      return new NextResponse('Unauthorized', { status: 401 });
-    }
-  }
-  return NextResponse.next();
+  const url = new URL(req.url);
+  const pathname = url.pathname;
+
+  // Only protect admin pages & admin APIs
+  const needsKey =
+    pathname.startsWith('/scam-hub/admin') ||
+    pathname.startsWith('/api/scam-hub/admin');
+
+  if (!needsKey) return NextResponse.next();
+
+  const key = url.searchParams.get('key') || req.headers.get('x-admin-key');
+  if (key && key === process.env.ADMIN_KEY) return NextResponse.next();
+
+  return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 }
 
-// Only run on the admin route
 export const config = {
-  matcher: ['/scam-hub/admin'],
+  matcher: ['/scam-hub/admin/:path*', '/api/scam-hub/admin/:path*'],
 };

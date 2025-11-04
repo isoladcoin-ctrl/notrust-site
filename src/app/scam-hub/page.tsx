@@ -51,10 +51,9 @@ export default async function ScamHubPage() {
                 </span>
               </div>
 
-              <p className="text-gray-300 mt-2 line-clamp-3">
-                {(p.summary ?? '').trim() || '—'}
+              <p className="text-gray-300 mt-2 whitespace-pre-line line-clamp-6">
+               {(p.summary ?? '').trim() || '—'}
               </p>
-
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 <span className="px-2 py-1 rounded bg-white/5">
                   status: {p.status ?? '—'}
