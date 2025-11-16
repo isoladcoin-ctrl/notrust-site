@@ -4,25 +4,24 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// Minimal helper for reading search params type-safely
-type SearchParams = { [k: string]: string | string[] | undefined };
+import AdminClient from "../../app/scam-hub/admin/AdminClient";
+ // ✅ correct import
 
-export default async function AdminPage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  // Read ?key=... from URL
-  const keyFromUrl =
-    typeof searchParams?.key === "string" ? searchParams.key.trim() : "";
+type SearchParams = Record<string, string | string[] | undefined>;
 
-  // Scam Hub uses ADMIN_KEY (different from ADMIN_TOKEN used by roadmap)
+interface AdminPageProps {
+  searchParams?: SearchParams;
+}
+
+export default async function AdminPage({ searchParams }: AdminPageProps) {
+  const keyRaw = searchParams?.key;
+  const keyFromUrl = typeof keyRaw === "string" ? keyRaw.trim() : "";
+
   const adminKey = (process.env.ADMIN_KEY ?? "").trim();
 
   const authorized = adminKey.length > 0 && keyFromUrl === adminKey;
 
   if (!authorized) {
-    // Server-render a simple unauthorized screen
     return (
       <main style={{ padding: 24 }}>
         <h1>Unauthorized</h1>
@@ -33,7 +32,5 @@ export default async function AdminPage({
     );
   }
 
-  // ✅ Import the client component ONLY after authorization succeeds
-  const AdminClient = (await import("./AdminClient")).default;
   return <AdminClient />;
 }

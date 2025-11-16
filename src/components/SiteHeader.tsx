@@ -43,9 +43,10 @@ export default function SiteHeader() {
         {/* Primary nav */}
         <nav className="hidden gap-2 md:flex">
           <NavItem href="/scam-hub">Scam Hub</NavItem>
+          <NavItem href="/scam-hub#about-notrust">About</NavItem> 
           <NavItem href="/tokenomics">Tokenomics</NavItem>
           <NavItem href="/roadmap">Roadmap</NavItem>
-            <Link
+         <Link
           href="/scam-hub/submit"
          className="ml-2 rounded-lg bg-white px-3 py-2 font-medium text-black hover:bg-white/90"
          aria-label="Submit a Post to Scam Hub"
@@ -77,6 +78,14 @@ export default function SiteHeader() {
           >
             Scan a Token
           </Link>
+           <Link
+             href="https://t.me/notrustcode"
+             target="_blank"
+             rel="noopener noreferrer"
+             className="rounded-lg bg-sky-500 px-3 py-2 text-sm font-semibold text-black hover:bg-sky-400"
+          >
+            Join TG
+        </Link>
           <Link
             href="https://pancakeswap.finance/swap?outputCurrency=&chain=bsc" 
             target="_blank"

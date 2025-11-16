@@ -1,9 +1,10 @@
 // src/app/scam-hub/page.tsx
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import Link from 'next/link';
-import { supabaseServer } from '@/supabase';
+import Link from "next/link";
+import { supabaseServer } from "@/supabase";
+import AboutMe from "../../components/AboutMe"; // 👈 NEW IMPORT
 
 type Post = {
   id: string;
@@ -19,9 +20,9 @@ export default async function ScamHubPage() {
   const sb = supabaseServer();
 
   const { data, error } = await sb
-    .from('posts')
-    .select('id, title, summary, created_at, status, wallet, rewarded_at')
-    .order('created_at', { ascending: false });
+    .from("posts")
+    .select("id, title, summary, created_at, status, wallet, rewarded_at")
+    .order("created_at", { ascending: false });
 
   // Make *sure* posts is always an array for TS
   const posts: Post[] = Array.isArray(data) ? (data as Post[]) : [];
@@ -44,7 +45,7 @@ export default async function ScamHubPage() {
             <div key={p.id} className="border border-white/10 rounded-xl p-4">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold">
-                  {p.title ?? '(untitled)'}
+                  {p.title ?? "(untitled)"}
                 </h2>
                 <span className="text-xs text-gray-400">
                   {new Date(p.created_at).toISOString()}
@@ -52,17 +53,17 @@ export default async function ScamHubPage() {
               </div>
 
               <p className="text-gray-300 mt-2 whitespace-pre-line line-clamp-6">
-               {(p.summary ?? '').trim() || '—'}
+                {(p.summary ?? "").trim() || "—"}
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 <span className="px-2 py-1 rounded bg-white/5">
-                  status: {p.status ?? '—'}
+                  status: {p.status ?? "—"}
                 </span>
                 <span className="px-2 py-1 rounded bg-white/5">
-                  wallet: {p.wallet ?? '—'}
+                  wallet: {p.wallet ?? "—"}
                 </span>
                 <span className="px-2 py-1 rounded bg-white/5">
-                  rewarded_at: {p.rewarded_at ?? '—'}
+                  rewarded_at: {p.rewarded_at ?? "—"}
                 </span>
               </div>
 
@@ -78,6 +79,12 @@ export default async function ScamHubPage() {
           ))}
         </div>
       )}
+
+      {/* 👇 NEW: About Me + Join Telegram section */}
+      <section id="about-notrust" className="mt-10">
+  <AboutMe telegramUrl="https://t.me/notrustcode" />
+</section>
+
     </main>
   );
 }
