@@ -74,7 +74,7 @@ export default function SiteFooter() {
               Receipts
             </Link>
             {' · '}
-            <Link href="/#scan" className="hover:text-white">
+            <Link href="/scanner" className="hover:text-white">
               Scan
             </Link>
           </span>
