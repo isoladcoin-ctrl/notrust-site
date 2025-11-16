@@ -1,61 +1,58 @@
 // src/app/scam-hub/[id]/page.tsx
-import { createClient } from '@supabase/supabase-js';
-import Link from 'next/link';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { supabaseServer } from '@/supabase';
 
 type Post = {
   id: string;
   title: string | null;
   summary: string | null;
-  status: string | null;
   created_at: string;
-  wallet?: string | null;
-  rewarded_at?: string | null;
+  status: string | null;
+  wallet: string | null;
+  rewarded_at: string | null;
 };
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default async function PostDetail({
   params,
 }: {
   params: { id: string };
 }) {
-  const { data: post, error } = await supabase
-    .from('posts')
-    .select('id,title,summary,status,created_at,wallet,rewarded_at')
-    .eq('id', params.id)
-    .single();
+  const sb = supabaseServer();
 
-  if (error || !post) {
-    notFound();
-  }
+  const { data, error } = await sb
+    .from('posts')
+    .select('id, title, summary, created_at, status, wallet, rewarded_at')
+    .eq('id', params.id)
+    .maybeSingle();
+
+  if (error || !data) return notFound();
+
+  const p = data as Post;
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-10">
-      <div className="mb-6">
-        <Link href="/scam-hub" className="text-sm text-indigo-300 hover:underline">
-          ← Back to Scam Hub
-        </Link>
+    <main className="max-w-3xl mx-auto px-6 py-10">
+      <Link href="/scam-hub" className="text-emerald-400 underline">
+        ← Back to Scam Hub
+      </Link>
+
+      <h1 className="text-3xl font-bold mt-4">{p.title ?? '(untitled)'}</h1>
+
+      <div className="mt-2 text-sm text-gray-400">
+        {new Date(p.created_at).toISOString()}
       </div>
 
-      <h1 className="text-3xl font-bold mb-2">{post.title ?? 'Untitled'}</h1>
-      <div className="text-xs text-gray-400 mb-6">
-        {post.created_at} · status: {post.status ?? '-'}
+      <div className="mt-6 text-gray-200 whitespace-pre-line">
+        {(p.summary ?? '').trim() || '—'}
       </div>
 
-      {/* Paragraphs fixed */}
-      <div className="whitespace-pre-wrap break-words leading-relaxed opacity-90">
-        {post.summary || '—'}
-      </div>
-
-      <div className="mt-6 text-xs text-gray-400">
-        {post.wallet ? <>wallet: {post.wallet}</> : null}
-        {post.rewarded_at ? (
-          <span className="ml-3">rewarded_at: {post.rewarded_at}</span>
-        ) : null}
+      <div className="mt-6 flex flex-wrap gap-2 text-xs">
+        <span className="px-2 py-1 rounded bg-white/5">status: {p.status ?? '—'}</span>
+        <span className="px-2 py-1 rounded bg-white/5">wallet: {p.wallet ?? '—'}</span>
+        <span className="px-2 py-1 rounded bg-white/5">rewarded_at: {p.rewarded_at ?? '—'}</span>
       </div>
     </main>
   );
