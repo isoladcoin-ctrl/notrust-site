@@ -26,7 +26,7 @@ export default function SiteFooter() {
               </a>
             </li>
             <a
-               href="https://t.me/notrustcode"
+               href="https://t.me/notrustintel"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-300 hover:text-white">

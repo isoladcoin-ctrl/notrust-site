@@ -79,7 +79,7 @@ export default function SiteHeader() {
             Scan a Token
           </Link>
            <Link
-             href="https://t.me/notrustcode"
+             href="https://t.me/notrustintel"
              target="_blank"
              rel="noopener noreferrer"
              className="rounded-lg bg-sky-500 px-3 py-2 text-sm font-semibold text-black hover:bg-sky-400"

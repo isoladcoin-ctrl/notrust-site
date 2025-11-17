@@ -82,7 +82,7 @@ export default async function ScamHubPage() {
 
       {/* 👇 NEW: About Me + Join Telegram section */}
       <section id="about-notrust" className="mt-10">
-  <AboutMe telegramUrl="https://t.me/notrustcode" />
+  <AboutMe telegramUrl="https://t.me/notrustintel" />
 </section>
 
     </main>
