@@ -4,11 +4,11 @@ import React from 'react';
 type Row = { title: string; value: string };
 
 const rows: Row[] = [
-  { title: 'Token Address',  value: 'https://bscscan.com/token/PUT_TOKEN_ADDRESS' },
-  { title: 'Verified Source', value: 'https://bscscan.com/address/PUT_CONTRACT_ADDRESS#code' },
-  { title: 'LP Proof',        value: 'https://bscscan.com/tx/PUT_LP_BURN_OR_LOCK_TX' },
-  { title: 'Deployer',        value: 'https://bscscan.com/address/PUT_DEPLOYER_ADDRESS' },
-  { title: 'Multisig',        value: 'https://bscscan.com/address/PUT_MULTISIG_ADDRESS' },
+  { title: 'Token Address',  value: 'https://bscscan.com/token/0xa5406FCa4413B95a13c5Cc58E1764a239ee0DfdA' },
+  { title: 'Verified Source', value: 'https://bscscan.com/address/0xa5406FCa4413B95a13c5Cc58E1764a239ee0DfdA#code' },
+  { title: 'LP Proof',        value: 'https://bscscan.com/tx/0x109bdb42788da6c6d9027cb08e91bd3f3ed736ec5ad4598ffc721732926ecbb9' },
+  { title: 'Deployer',        value: 'https://bscscan.com/address/0x08E3dD0CD1cCE9E2403e66779424C6378B613190' },
+  { title: 'Research&Development',value: 'https://bscscan.com/address/0x8e51bb1caf0aed8ce147d37613850bf457f0eb51' },
 ];
 
 function isUrl(v: string) {

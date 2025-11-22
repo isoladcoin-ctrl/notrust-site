@@ -90,7 +90,7 @@ export default function TokenomicsPage() {
   title="$NOTRUST Tokenomics"
   subtitle="Built for trust, stability, and long-term value."
   ctaText="Buy $NOTRUST"
-  onCtaClick={() => window.open("https://pancakeswap.finance/", "_blank")}
+  onCtaClick={() => window.open("https://pancakeswap.finance/swap?outputCurrency=0xa5406FCa4413B95a13c5Cc58E1764a239ee0DfdA&inputCurrency=BNB", "_blank")}
   imageUrl="/media/hero-tokenomics.jpg"   // ← points to public/media/hero-tokenomics.jpg
   allowUpload={false}                     // ← hides upload UI for visitors
 />

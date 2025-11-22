@@ -1,7 +1,8 @@
 {
-  "tokenAddress": "https://bscscan.com/token/PUT_TOKEN_ADDRESS",
-  "verifiedLink": "https://bscscan.com/address/PUT_CONTRACT_ADDRESS#code",
-  "lpTx": "https://bscscan.com/tx/PUT_LP_BURN_OR_LOCK_TX",
-  "deployer": "https://bscscan.com/address/PUT_DEPLOYER_ADDRESS",
-  "multisig": "https://bscscan.com/address/PUT_MULTISIG_ADDRESS"
+  "tokenAddress": "https://bscscan.com/token/0xa5406FCa4413B95a13c5Cc58E1764a239ee0DfdA",
+  "verifiedLink": "https://bscscan.com/address/0xa5406FCa4413B95a13c5Cc58E1764a239ee0DfdA#code",
+  "lpTx": "https://bscscan.com/tx/0x109bdb42788da6c6d9027cb08e91bd3f3ed736ec5ad4598ffc721732926ecbb9",
+  "deployer": "https://bscscan.com/address/0x08E3dD0CD1cCE9E2403e66779424C6378B613190",
+  "research&Development": "https://bscscan.com/address/0x8e51bb1caf0aed8ce147d37613850bf457f0eb51"
 }
+

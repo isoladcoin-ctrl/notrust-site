@@ -87,7 +87,7 @@ export default function SiteHeader() {
             Join TG
         </Link>
           <Link
-            href="https://pancakeswap.finance/swap?outputCurrency=&chain=bsc" 
+            href="https://pancakeswap.finance/swap?outputCurrency=0xa5406FCa4413B95a13c5Cc58E1764a239ee0DfdA&inputCurrency=BNB" 
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-black hover:bg-emerald-400"
